@@ -1,0 +1,94 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Style-Type" content="text/css">
+  <title></title>
+  <meta name="Generator" content="Cocoa HTML Writer">
+  <meta name="CocoaVersion" content="2299.7">
+  <style type="text/css">
+    p.p1 {margin: 0.0px 0.0px 0.0px 0.0px; font: 13.0px 'Helvetica Neue'; color: #000000}
+    p.p2 {margin: 0.0px 0.0px 0.0px 0.0px; font: 13.0px 'Helvetica Neue'; color: #000000; min-height: 15.0px}
+  </style>
+</head>
+<body>
+<p class="p1">import streamlit as st</p>
+<p class="p1">import pandas as pd</p>
+<p class="p1">import random</p>
+<p class="p2"><br></p>
+<p class="p1"># Initialisierung der Session-Variablen</p>
+<p class="p1">if "players" not in st.session_state:</p>
+<p class="p1"><span class="Apple-converted-space">    </span>st.session_state.players = {</p>
+<p class="p1"><span class="Apple-converted-space">        </span>"Herren-Einzel": [</p>
+<p class="p1"><span class="Apple-converted-space">            </span>"Alexander Ott", "Yong-Hwan Noh", "Sebastian Ferdinand", "Jannik Senss", "Christian Hackstein",<span class="Apple-converted-space"> </span></p>
+<p class="p1"><span class="Apple-converted-space">            </span>"Misha Kovalov", "Christian Becker", "Manuel Menzel", "Matthias Bornemann", "Fabian Fischer",<span class="Apple-converted-space"> </span></p>
+<p class="p1"><span class="Apple-converted-space">            </span>"Daniel Druyen", "Robert Marusic", "Janis Schmelz", "Veit Kriegel", "Max Pradel", "Florian Weber",<span class="Apple-converted-space"> </span></p>
+<p class="p1"><span class="Apple-converted-space">            </span>"Lukas Endemann", "Raphael Jühe", "Tobias Wegner", "Weiki Chen", "Tobias Neumann", "Dennis Starke",<span class="Apple-converted-space"> </span></p>
+<p class="p1"><span class="Apple-converted-space">            </span>"Vincent Bergman", "Cedric Noller", "Sebastian Schulz", "Tim Kromat", "Julian Klehr", "John Zickler",<span class="Apple-converted-space"> </span></p>
+<p class="p1"><span class="Apple-converted-space">            </span>"Ngoc Hai Long Nguyen", "Lars Heidelberg", "Bogdan Cravcenco", "Sean Bakker", "Arttapon Setchampa",<span class="Apple-converted-space"> </span></p>
+<p class="p1"><span class="Apple-converted-space">            </span>"Sven Klein", "Constantin Wermann", "Michael Hansen", "Tobias Vanik", "Marius Buschmeier",<span class="Apple-converted-space"> </span></p>
+<p class="p1"><span class="Apple-converted-space">            </span>"Matthew Decker", "Leon de Groot", "Artem Kokorin", "Christian Knoche", "Michael Kroes",<span class="Apple-converted-space"> </span></p>
+<p class="p1"><span class="Apple-converted-space">            </span>"Clemens Zintgraf", "Kai Brösing", "Jonas Schneider", "Stanislav Ovsyannikov", "Markus Spindler",<span class="Apple-converted-space"> </span></p>
+<p class="p1"><span class="Apple-converted-space">            </span>"Aditya Oka", "Jens Hidle", "Hung Dinh"</p>
+<p class="p1"><span class="Apple-converted-space">        </span>],<span class="Apple-converted-space"> </span></p>
+<p class="p1"><span class="Apple-converted-space">        </span>"Damen-Einzel": [], "Herren-Doppel": [], "Damen-Doppel": []</p>
+<p class="p1"><span class="Apple-converted-space">    </span>}</p>
+<p class="p1">if "matches" not in st.session_state:</p>
+<p class="p1"><span class="Apple-converted-space">    </span>st.session_state.matches = {"Herren-Einzel": [], "Damen-Einzel": [], "Herren-Doppel": [], "Damen-Doppel": []}</p>
+<p class="p1">if "ranking" not in st.session_state:</p>
+<p class="p1"><span class="Apple-converted-space">    </span>st.session_state.ranking = {</p>
+<p class="p1"><span class="Apple-converted-space">        </span>"Herren-Einzel": {player: 0 for player in st.session_state.players["Herren-Einzel"]},<span class="Apple-converted-space"> </span></p>
+<p class="p1"><span class="Apple-converted-space">        </span>"Damen-Einzel": {}, "Herren-Doppel": {}, "Damen-Doppel": {}</p>
+<p class="p1"><span class="Apple-converted-space">    </span>}</p>
+<p class="p2"><br></p>
+<p class="p1">st.title("Badminton Meisterschaft")</p>
+<p class="p2"><br></p>
+<p class="p1"># Turnier Auswahl</p>
+<p class="p1">tournament = st.selectbox("Wähle ein Turnier", ["Herren-Einzel", "Damen-Einzel", "Herren-Doppel", "Damen-Doppel"])</p>
+<p class="p2"><br></p>
+<p class="p1"># Spieler hinzufügen</p>
+<p class="p1">st.subheader("Spieler Registrierung")</p>
+<p class="p1">new_player = st.text_input("Spielername eingeben")</p>
+<p class="p1">if st.button("Hinzufügen"):</p>
+<p class="p1"><span class="Apple-converted-space">    </span>if new_player and new_player not in st.session_state.players[tournament]:</p>
+<p class="p1"><span class="Apple-converted-space">        </span>st.session_state.players[tournament].append(new_player)</p>
+<p class="p1"><span class="Apple-converted-space">        </span>st.session_state.ranking[tournament][new_player] = 0</p>
+<p class="p1"><span class="Apple-converted-space">        </span>st.success(f"{new_player} wurde hinzugefügt!")</p>
+<p class="p2"><br></p>
+<p class="p1"># Spielpaarungen generieren</p>
+<p class="p1">def generate_matches():</p>
+<p class="p1"><span class="Apple-converted-space">    </span>random.shuffle(st.session_state.players[tournament])</p>
+<p class="p1"><span class="Apple-converted-space">    </span>pairs = []</p>
+<p class="p1"><span class="Apple-converted-space">    </span>for i in range(0, len(st.session_state.players[tournament]) - 1, 2):</p>
+<p class="p1"><span class="Apple-converted-space">        </span>pairs.append((st.session_state.players[tournament][i], st.session_state.players[tournament][i + 1]))</p>
+<p class="p1"><span class="Apple-converted-space">    </span>return pairs</p>
+<p class="p2"><br></p>
+<p class="p1">st.subheader("Spielplan")</p>
+<p class="p1">if st.button("Nächste Runde starten"):</p>
+<p class="p1"><span class="Apple-converted-space">    </span>st.session_state.matches[tournament] = generate_matches()</p>
+<p class="p2"><br></p>
+<p class="p1">table_data = []</p>
+<p class="p1">for match in st.session_state.matches[tournament]:</p>
+<p class="p1"><span class="Apple-converted-space">    </span>player1, player2 = match</p>
+<p class="p1"><span class="Apple-converted-space">    </span>table_data.append([player1, player2, ""])</p>
+<p class="p2"><br></p>
+<p class="p1">df_matches = pd.DataFrame(table_data, columns=["Spieler 1", "Spieler 2", "Ergebnis"])</p>
+<p class="p1">st.table(df_matches)</p>
+<p class="p2"><br></p>
+<p class="p1"># Ergebnisse eintragen</p>
+<p class="p1">st.subheader("Ergebnisse eintragen")</p>
+<p class="p1">for match in st.session_state.matches[tournament]:</p>
+<p class="p1"><span class="Apple-converted-space">    </span>player1, player2 = match</p>
+<p class="p1"><span class="Apple-converted-space">    </span>score = st.text_input(f"Ergebnis für {player1} vs. {player2}")</p>
+<p class="p1"><span class="Apple-converted-space">    </span>if st.button(f"Speichern: {player1} vs. {player2}"):</p>
+<p class="p1"><span class="Apple-converted-space">        </span>winner = player1 if "-" in score and int(score.split("-")[0]) &gt; int(score.split("-")[1]) else player2</p>
+<p class="p1"><span class="Apple-converted-space">        </span>st.session_state.ranking[tournament][winner] += 2</p>
+<p class="p1"><span class="Apple-converted-space">        </span>st.success(f"{winner} erhält 2 Punkte")</p>
+<p class="p2"><br></p>
+<p class="p1"># Rangliste anzeigen</p>
+<p class="p1">st.subheader("Rangliste")</p>
+<p class="p1">rank_df = pd.DataFrame(list(st.session_state.ranking[tournament].items()), columns=["Spieler", "Punkte"])</p>
+<p class="p1">rank_df = rank_df.sort_values(by="Punkte", ascending=False)</p>
+<p class="p1">st.table(rank_df)</p>
+</body>
+</html>
