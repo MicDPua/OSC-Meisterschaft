@@ -1,4 +1,4 @@
-import streamlit as st
+ streamlit as st
 import pandas as pd
 import random
 
@@ -67,5 +67,5 @@ for match in st.session_state.matches[tournament]:
     player1, player2 = match
     score = st.text_input(f"Ergebnis für {player1} vs. {player2}")
     if st.button(f"Speichern: {player1} vs. {player2}"):
-        winner = player1 if "-" in score and int(score.split("-")[0]) > int(score.split("-")[1]) else player2
-        st.session_state.ranking[t
+        winner = player1 if "-" in score and int(score.split("-")[0]) > int(score.split("-")[1]) else player2 st.session_state.ranking[tournament][winner] += 2
+        
