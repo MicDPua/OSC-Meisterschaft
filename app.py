@@ -1,4 +1,4 @@
-Satz", score_options, key=f"{player2}_set2")
+set2_p2 = st.selectbox(f"{player2} - 2. Satz", score_options, key=f"{player2}_set2")
         set3_p1 = st.selectbox(f"{player1} - 3. Satz (falls nötig)", score_options, key=f"{player1}_set3")
         set3_p2 = st.selectbox(f"{player2} - 3. Satz (falls nötig)", score_options, key=f"{player2}_set3")
 
