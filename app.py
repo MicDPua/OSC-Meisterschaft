@@ -5,7 +5,7 @@ import random
 # Titel der App
 st.title("🏸 Badminton Meisterschaft")
 
-# Initialisierung der Session-Variablen mit vorgegebenen Spielern
+# Initialisierung der Session-Variablen
 if "players" not in st.session_state:
     st.session_state.players = {
         "Herren-Einzel": [
@@ -24,7 +24,9 @@ if "ranking" not in st.session_state:
         for t in st.session_state.players
     }
 if "match_results" not in st.session_state:
-    st.session_state.match_results = {t: [] for t in st.session_state.players}
+    st.session_state.match_results = {t: {} for t in st.session_state.players}
+if "current_matchday" not in st.session_state:
+    st.session_state.current_matchday = {t: 1 for t in st.session_state.players}
 
 # Seiten-Menü
 menu = st.sidebar.radio("📌 Menü", ["Spielübersicht & Ergebnisse", "📊 Rangliste", "📅 Spieltag Ergebnisse"])
@@ -91,29 +93,46 @@ if menu == "Spielübersicht & Ergebnisse":
         if st.button(f"Speichern: {player1} vs. {player2}", key=f"save_{player1}_{player2}"):
             if result:
                 sets = result.split(", ")
-                wins_player1 = sum(1 for s in sets if int(s.split("-")[0]) > int(s.split("-")[1]))
-                wins_player2 = sum(1 for s in sets if int(s.split("-")[1]) > int(s.split("-")[0]))
+                try:
+                    wins_player1 = sum(1 for s in sets if int(s.split("-")[0]) > int(s.split("-")[1]))
+                    wins_player2 = sum(1 for s in sets if int(s.split("-")[1]) > int(s.split("-")[0]))
 
-                if wins_player1 >= 2:
-                    winner = player1
-                elif wins_player2 >= 2:
-                    winner = player2
-                else:
-                    st.error("Mindestens zwei Gewinnsätze sind nötig.")
-                    continue
+                    if wins_player1 >= 2:
+                        winner = player1elif wins_player2 >= 2:
+                        winner = player2
+                    else:
+                        st.error("Mindestens zwei Gewinnsätze sind nötig.")
+                        continue
 
-                st.session_state.ranking[tournament][winner]["Punkte"] += 2
-                st.session_state.ranking[tournament][player1]["Spiele"] += 1
-                st.session_state.ranking[tournament][player2]["Spiele"] += 1
+                    # Punkte & Spiele aktualisieren
+                    st.session_state.ranking[tournament][winner]["Punkte"] += 2
+                    st.session_state.ranking[tournament][player1]["Spiele"] += 1
+                    st.session_state.ranking[tournament][player2]["Spiele"] += 1
 
-                st.session_state.match_results[tournament].append({"Spieler 1": player1, "Spieler 2": player2, "Ergebnis": result})
-                st.success(f"{winner} erhält 2 Punkte")
+                    # Ergebnisse pro Spieltag speichern
+                    matchday = st.session_state.current_matchday[tournament]
+                    if matchday not in st.session_state.match_results[tournament]:
+                        st.session_state.match_results[tournament][matchday] = []
+                    
+                    st.session_state.match_results[tournament][matchday].append({
+                        "Spieler 1": player1, "Spieler 2": player2, "Ergebnis": result
+                    })
+
+                    st.success(f"{winner} erhält 2 Punkte")
+
+                except ValueError:
+                    st.error("Bitte Ergebnisse im richtigen Format eingeben (z.B. 21-18, 15-21, 21-19)")
+
+    # Nächsten Spieltag starten
+    if st.button("Spieltag abschließen & neuen Spieltag starten"):
+        st.session_state.current_matchday[tournament] += 1
+        st.success(f"Neuer Spieltag {st.session_state.current_matchday[tournament]} gestartet!")
 
 elif menu == "📊 Rangliste":
     # Rangliste anzeigen mit Spiele-Anzahl
     st.subheader("🏆 Rangliste (Live-Aktualisierung)")
     rank_data = [
-        [spieler, info["Punkte"], max(1, info["Spiele"])]  # Startet bei 1 statt 0
+        [spieler, info["Punkte"], info["Spiele"]]  # Startet bei 0
         for spieler, info in st.session_state.ranking[tournament].items()
     ]
     rank_df = pd.DataFrame(rank_data, columns=["Spieler", "Punkte", "Spiele"])
@@ -123,8 +142,11 @@ elif menu == "📊 Rangliste":
 elif menu == "📅 Spieltag Ergebnisse":
     # Ergebnisse aller Spieltage anzeigen
     st.subheader(f"📅 Detaillierte Ergebnisse für {tournament}")
-    if not st.session_state.match_results[tournament]:
+    matchdays = st.session_state.match_results[tournament]
+
+    if not matchdays:
         st.info("Noch keine Ergebnisse eingetragen.")
     else:
-        results_df = pd.DataFrame(st.session_state.match_results[tournament])
+        selected_matchday = st.selectbox("Wähle einen Spieltag", sorted(matchdays.keys()))
+        results_df = pd.DataFrame(matchdays[selected_matchday])
         st.table(results_df)
