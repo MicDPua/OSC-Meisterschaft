@@ -13,7 +13,10 @@ def load_data():
     except (FileNotFoundError, json.JSONDecodeError):
         return {
             "players": {"Herren-Einzel": [], "Damen-Einzel": [], "Herren-Doppel": [], "Damen-Doppel": []},
-            "matches": {}, "ranking": {}, "match_results": {}, "current_matchday": {}
+            "matches": {"Herren-Einzel": [], "Damen-Einzel": [], "Herren-Doppel": [], "Damen-Doppel": []},
+            "ranking": {"Herren-Einzel": {}, "Damen-Einzel": {}, "Herren-Doppel": {}, "Damen-Doppel": {}},
+            "match_results": {"Herren-Einzel": {}, "Damen-Einzel": {}, "Herren-Doppel": {}, "Damen-Doppel": {}},
+            "current_matchday": {"Herren-Einzel": 1, "Damen-Einzel": 1, "Herren-Doppel": 1, "Damen-Doppel": 1}
         }
 
 def save_data():
@@ -34,79 +37,75 @@ st.title("🏸 Badminton Meisterschaft")
 
 # Sicherstellen, dass die Hauptstrukturen existieren
 if "players" not in st.session_state:
-    st.session_state.players = loaded_data.get("players", {"Herren-Einzel": [], "Damen-Einzel": [], "Herren-Doppel": [], "Damen-Doppel": []})
+    st.session_state.players = loaded_data["players"]
 if "matches" not in st.session_state:
-    st.session_state.matches = loaded_data.get("matches", {t: [] for t in st.session_state.players})
+    st.session_state.matches = loaded_data["matches"]
 if "ranking" not in st.session_state:
-    st.session_state.ranking = loaded_data.get("ranking", {t: {} for t in st.session_state.players})
+    st.session_state.ranking = loaded_data["ranking"]
 if "match_results" not in st.session_state:
-    st.session_state.match_results = loaded_data.get("match_results", {t: {} for t in st.session_state.players})
+    st.session_state.match_results = loaded_data["match_results"]
 if "current_matchday" not in st.session_state:
-    st.session_state.current_matchday = loaded_data.get("current_matchday", {t: 1 for t in st.session_state.players})
+    st.session_state.current_matchday = loaded_data["current_matchday"]
 
 # Seiten-Menü
 menu = st.sidebar.radio("📌 Menü", ["Spielübersicht & Ergebnisse", "🏆 Rangliste", "📅 Spieltage"])
 
 # Turnier Auswahl
-if len(st.session_state.players.keys()) == 0:
-    st.warning("Es gibt noch keine Turniere. Bitte neue Spieler hinzufügen.")
-else:
-    tournament = st.selectbox("🏆 Wähle ein Turnier", list(st.session_state.players.keys()))
+tournament = st.selectbox("🏆 Wähle ein Turnier", list(st.session_state.players.keys()))
 
-    if menu == "Spielübersicht & Ergebnisse":
-        # Spieler hinzufügen
-        st.subheader("📌 Spieler Registrierung")
-        new_player = st.text_input("Spielername eingeben")
-        if st.button("Hinzufügen"):
-            if new_player and new_player not in st.session_state.players[tournament]:
-                st.session_state.players[tournament].append(new_player)
-                st.session_state.ranking[tournament][new_player] = {"Punkte": 0, "Spiele": 0}
-                save_data()
-                st.success(f"{new_player} wurde hinzugefügt!")
-
-        # Spieler entfernen
-        remove_player = st.selectbox("Spieler entfernen", ["Keinen entfernen"] + st.session_state.players[tournament])
-        if st.button("Entfernen") and remove_player != "Keinen entfernen":
-            st.session_state.players[tournament].remove(remove_player)
-            del st.session_state.ranking[tournament][remove_player]
+if menu == "Spielübersicht & Ergebnisse":
+    # Spieler hinzufügen
+    st.subheader("📌 Spieler Registrierung")
+    new_player = st.text_input("Spielername eingeben")
+    if st.button("Hinzufügen"):
+        if new_player and new_player not in st.session_state.players[tournament]:
+            st.session_state.players[tournament].append(new_player)
+            st.session_state.ranking[tournament][new_player] = {"Punkte": 0, "Spiele": 0}
             save_data()
-            st.success(f"{remove_player} wurde entfernt!")
+            st.success(f"{new_player} wurde hinzugefügt!")
 
-        # Spielpaarungen generieren
-        def generate_matches():
-            players = st.session_state.players[tournament]
-            if len(players) < 2:
-                st.warning("Mindestens zwei Spieler sind erforderlich.")
-                return []
-            random.shuffle(players)
-            pairs = [(players[i], players[i + 1]) for i in range(0, len(players) - 1, 2)]
-            if len(players) % 2 == 1:
-                pairs.append((players[-1], "Freilos"))
-            return pairs
+    # Spieler entfernen
+    remove_player = st.selectbox("Spieler entfernen", ["Keinen entfernen"] + st.session_state.players[tournament])
+    if st.button("Entfernen") and remove_player != "Keinen entfernen":
+        st.session_state.players[tournament].remove(remove_player)
+        del st.session_state.ranking[tournament][remove_player]
+        save_data()
+        st.success(f"{remove_player} wurde entfernt!")
 
-        if st.button("Nächste Runde starten"):
-            st.session_state.matches[tournament] = generate_matches()
-            st.session_state.current_matchday[tournament] += 1
-            save_data()
+    # Spielpaarungen generieren
+    def generate_matches():
+        players = st.session_state.players[tournament]
+        if len(players) < 2:
+            st.warning("Mindestens zwei Spieler sind erforderlich.")
+            return []
+        random.shuffle(players)
+        pairs = [(players[i], players[i + 1]) for i in range(0, len(players) - 1, 2)]
+        if len(players) % 2 == 1:
+            pairs.append((players[-1], "Freilos"))
+        return pairs
 
-        # Spiele anzeigen
-        st.subheader("🏸 Aktuelle Matches")
-        match_list = st.session_state.matches[tournament]
-        df_matches = pd.DataFrame(match_list, columns=["Spieler 1", "Spieler 2"])
-        st.table(df_matches)
+    if st.button("Nächste Runde starten"):
+        st.session_state.matches[tournament] = generate_matches()
+        st.session_state.current_matchday[tournament] += 1
+        save_data()
 
-    elif menu == "🏆 Rangliste":
-        st.subheader("🏆 Rangliste")
-        rank_data = [[p, d["Punkte"], d["Spiele"]] for p, d in st.session_state.ranking[tournament].items()]
-        df_rank = pd.DataFrame(rank_data, columns=["Spieler", "Punkte", "Spiele"]).sort_values(by="Punkte", ascending=False)
-        st.table(df_rank)
+    # Spiele anzeigen
+    st.subheader("🏸 Aktuelle Matches")
+    match_list = st.session_state.matches[tournament]
+    df_matches = pd.DataFrame(match_list, columns=["Spieler 1", "Spieler 2"])
+    st.table(df_matches)
 
-    elif menu == "📅 Spieltage":
-        st.subheader(f"📅 Ergebnisse für {tournament}")
-        matchdays = st.session_state.match_results[tournament]
-        if not matchdays:
-            st.info("Noch keine Ergebnisse eingetragen.")
-        else:
-            selected_matchday = st.selectbox("Wähle einen Spieltag", sorted(matchdays.keys()))
-            results_df = pd.DataFrame(matchdays[selected_matchday])
-            st.table(results_df)
+elif menu == "🏆 Rangliste":
+    st.subheader("🏆 Rangliste")
+    rank_data = [[p, d["Punkte"], d["Spiele"]] for p, d in st.session_state.ranking[tournament].items()]df_rank = pd.DataFrame(rank_data, columns=["Spieler", "Punkte", "Spiele"]).sort_values(by="Punkte", ascending=False)
+    st.table(df_rank)
+
+elif menu == "📅 Spieltage":
+    st.subheader(f"📅 Ergebnisse für {tournament}")
+    matchdays = st.session_state.match_results[tournament]
+    if not matchdays:
+        st.info("Noch keine Ergebnisse eingetragen.")
+    else:
+        selected_matchday = st.selectbox("Wähle einen Spieltag", sorted(matchdays.keys()))
+        results_df = pd.DataFrame(matchdays[selected_matchday])
+        st.table(results_df)
