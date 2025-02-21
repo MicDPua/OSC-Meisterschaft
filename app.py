@@ -76,9 +76,15 @@ if tournament:
     
     elif menu == "📊 Rangliste" and tournament in st.session_state.ranking:
         st.subheader("🏆 Rangliste (Live-Aktualisierung)")
-        df_rank = pd.DataFrame([{**{"Spieler": p}, **st.session_state.ranking[tournament][p]} for p in st.session_state.ranking[tournament]])
-        df_rank = df_rank.sort_values(by="Punkte", ascending=False)
-        st.table(df_rank)
+        if st.session_state.ranking[tournament]:
+            df_rank = pd.DataFrame([{**{"Spieler": p}, **st.session_state.ranking[tournament][p]} for p in st.session_state.ranking[tournament]])
+            if not df_rank.empty:
+                df_rank = df_rank.sort_values(by="Punkte", ascending=False)
+                st.table(df_rank)
+            else:
+                st.info("Noch keine Ranglisten-Daten vorhanden.")
+        else:
+            st.info("Noch keine Ranglisten-Daten vorhanden.")
     
     elif menu == "📅 Spieltag Ergebnisse" and tournament in st.session_state.match_results:
         st.subheader(f"📅 Detaillierte Ergebnisse für {tournament}")
