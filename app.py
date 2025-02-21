@@ -98,7 +98,8 @@ if menu == "Spielübersicht & Ergebnisse":
                     wins_player2 = sum(1 for s in sets if int(s.split("-")[1]) > int(s.split("-")[0]))
 
                     if wins_player1 >= 2:
-                        winner = player1elif wins_player2 >= 2:
+                        winner = player1
+elif wins_player2 >= 2:
                         winner = player2
                     else:
                         st.error("Mindestens zwei Gewinnsätze sind nötig.")
